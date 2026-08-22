@@ -21,8 +21,15 @@ enum HttpMethod {
   DELETE
 }
 
+enum FailureReason {
+  TIMEOUT
+  CONNECTION_ERROR
+  UNEXPECTED_RESPONSE
+  UNKNOWN_ERROR
+}
+
 model Endpoint {
-  id           String     @id @default(uuid())
+  id           String        @id @default(uuid())
   url          String
   name         String
   description  String?
@@ -30,9 +37,25 @@ model Endpoint {
   headers      Json?
   body         Json?
   expectedCode Int
-  intervalMs   Int        @default(60000)
-  timeoutMs    Int        @default(10000)
-  isPaused     Boolean    @default(false)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  intervalMs   Int           @default(60000)
+  timeoutMs    Int           @default(10000)
+  isPaused     Boolean       @default(false)
+  probeResults ProbeResult[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model ProbeResult {
+  id             String         @id @default(uuid())
+  endpoint       Endpoint       @relation(fields: [endpointId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  endpointId     String
+  actualCode     Int?
+  failureReason  FailureReason?
+  errorDetails   String?
+  responseTimeMs Int?
+  isSuccess      Boolean
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([endpointId, createdAt])
 }
