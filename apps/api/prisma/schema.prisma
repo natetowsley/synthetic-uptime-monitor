@@ -11,3 +11,28 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum HttpMethod {
+  GET
+  HEAD
+  POST
+  PUT
+  PATCH
+  DELETE
+}
+
+model Endpoint {
+  id           String     @id @default(uuid())
+  url          String
+  name         String
+  description  String?
+  method       HttpMethod
+  headers      Json?
+  body         Json?
+  expectedCode Int
+  intervalMs   Int        @default(60000)
+  timeoutMs    Int        @default(10000)
+  isPaused     Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
