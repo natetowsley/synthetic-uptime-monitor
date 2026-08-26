@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum HttpMethod {
+  GET
+  HEAD
+  POST
+  PUT
+  PATCH
+  DELETE
+}
+
+enum FailureReason {
+  TIMEOUT
+  CONNECTION_ERROR
+  UNEXPECTED_RESPONSE
+  UNKNOWN_ERROR
+}
+
+model User {
+  id           String     @id @default(uuid())
+  email        String     @unique
+  name         String?
+  passwordHash String?
+  endpoints    Endpoint[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model Endpoint {
+  id                          String        @id @default(uuid())
+  user                        User          @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId                      String
+  url                         String
+  name                        String
+  description                 String?
+  method                      HttpMethod
+  headers                     Json?
+  body                        Json?
+  expectedCode                Int
+  intervalMs                  Int           @default(60000)
+  timeoutMs                   Int           @default(10000)
+  consecutiveFailureThreshold Int           @default(3)
+  isPaused                    Boolean       @default(false)
+  probeResults                ProbeResult[]
+  incidents                   Incident[]
+  createdAt                   DateTime      @default(now())
+  updatedAt                   DateTime      @updatedAt
+
+  @@index([userId])
+}
+
+model ProbeResult {
+  id             String         @id @default(uuid())
+  endpoint       Endpoint       @relation(fields: [endpointId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  endpointId     String
+  actualCode     Int?
+  failureReason  FailureReason?
+  errorDetails   String?
+  responseTimeMs Int?
+  isSuccess      Boolean
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([endpointId, createdAt])
+}
+
+model Incident {
+  id         String    @id @default(uuid())
+  endpoint   Endpoint  @relation(fields: [endpointId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  endpointId String
+  startedAt  DateTime
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  resolvedAt DateTime?
+
+  @@index([endpointId, startedAt])
+}
