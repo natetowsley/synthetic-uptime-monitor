@@ -1,10 +1,12 @@
 import express, { type NextFunction, type Express, type Request, type Response } from 'express';
 import logger from './config/logger.js';
 import { pinoHttp } from 'pino-http';
+import userRoutes from './routes/userRoutes.js';
 
 const app: Express = express();
 app.use(express.json());
 app.use(pinoHttp({ logger }));
+app.use('/users', userRoutes);
 
 app.get('/', middle, (req: Request, res: Response) => {
     res.send('Hello!');
