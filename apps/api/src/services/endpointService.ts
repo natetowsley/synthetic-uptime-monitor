@@ -1,24 +1,16 @@
 import prisma from '../config/prisma.js';
 import logger from '../config/logger.js';
 import { PrismaClient, Prisma, HttpMethod } from '../generated/prisma/client.js';
+import z from 'zod';
+import { endpointSchema } from '../validators/endpointValidators.js';
 
-export async function createEndpoint(data: {
-    userId: string; //TEMPORARY: This should be removed once we implement user authentication and authorization
-    url: string;
-    name: string;
-    description?: string;
-    method: HttpMethod;
-    headers?: Prisma.InputJsonValue;
-    body?: Prisma.InputJsonValue;
-    expectedCode: number;
-    intervalMs?: number;
-    timeoutMs?: number;
-    consecutiveFailureThreshold?: number;
-    isPaused?: boolean;
-}) {
+export async function createEndpoint(data: z.infer<typeof endpointSchema>) {
     try {
         return await prisma.endpoint.create({
-            data,
+            data: {
+                ...data,
+                body: data.body as Prisma.InputJsonValue | undefined, // Must cast body from zod schema to Prisma's InputJsonValue type
+            },
         });
     } catch (error) {
         if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -28,7 +20,7 @@ export async function createEndpoint(data: {
             }
 
         }
-        
+
         logger.error({ error }, 'Error creating endpoint');
         throw error;
     }
