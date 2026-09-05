@@ -25,3 +25,15 @@ export async function createEndpoint(data: z.infer<typeof endpointSchema>) {
         throw error;
     }
 }
+
+export async function getEndpointsByUserId(userId: string) {
+    return await prisma.endpoint.findMany({
+        where: { userId }
+    });
+}
+
+export async function listActiveEndpoints() {
+    return await prisma.endpoint.findMany({
+        where: { isPaused: false }
+    });
+}

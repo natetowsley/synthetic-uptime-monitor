@@ -1,8 +1,9 @@
 import { Router } from 'express';
-import { registerEndpoint } from '../controllers/endpointController.js';
+import { registerEndpoint, getEndpointsByUser, getActiveEndpoints } from '../controllers/endpointController.js';
 
 const router = Router();
 
 router.post('/', registerEndpoint);
+router.get('/', getEndpointsByUser);
 
 export default router;

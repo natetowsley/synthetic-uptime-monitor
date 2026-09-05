@@ -1,5 +1,5 @@
 import logger from '../config/logger.js';
-import { createEndpoint } from '../services/endpointService.js';
+import { createEndpoint, getEndpointsByUserId, listActiveEndpoints } from '../services/endpointService.js';
 import { Request, Response } from 'express';
 import z from 'zod';
 import { endpointSchema } from '../validators/endpointValidators.js';
@@ -23,4 +23,21 @@ export async function registerEndpoint(req: Request, res: Response) {
         logger.error({ error }, 'Error in registerEndpoint controller');
         res.status(500).json({ message: 'Internal server error' });
     }
+}
+
+export async function getEndpointsByUser(req: Request, res: Response) {
+  const userId = req.query.userId;
+
+  if (typeof userId !== 'string') {
+    res.status(400).json({ message: 'userId query parameter is required' });
+    return;
+  }
+
+  const endpoints = await getEndpointsByUserId(userId);
+  res.status(200).json(endpoints);
+}
+
+export async function getActiveEndpoints(req: Request, res: Response) {
+    const endpoints = await listActiveEndpoints();
+    res.status(200).json(endpoints);
 }
