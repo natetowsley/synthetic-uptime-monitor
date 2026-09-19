@@ -19,6 +19,11 @@ export async function registerEndpoint(req: Request, res: Response) {
             res.status(404).json({ message: error.message });
             return;
         }
+        if (error instanceof Error && error.message === 'Scheduling failed, endpoint not saved') {
+            logger.error({ error }, 'Scheduling error in registerEndpoint controller');
+            res.status(503).json({ message: 'Unable to schedule endpoint monitoring right now. Please try again.' });
+            return;
+        }
 
         logger.error({ error }, 'Error in registerEndpoint controller');
         res.status(500).json({ message: 'Internal server error' });
@@ -26,15 +31,15 @@ export async function registerEndpoint(req: Request, res: Response) {
 }
 
 export async function getEndpointsByUser(req: Request, res: Response) {
-  const userId = req.query.userId;
+    const userId = req.query.userId;
 
-  if (typeof userId !== 'string') {
-    res.status(400).json({ message: 'userId query parameter is required' });
-    return;
-  }
+    if (typeof userId !== 'string') {
+        res.status(400).json({ message: 'userId query parameter is required' });
+        return;
+    }
 
-  const endpoints = await getEndpointsByUserId(userId);
-  res.status(200).json(endpoints);
+    const endpoints = await getEndpointsByUserId(userId);
+    res.status(200).json(endpoints);
 }
 
 export async function getActiveEndpoints(req: Request, res: Response) {
